@@ -8,8 +8,8 @@
     "start": "node dist/server.js",
     "predev": "npm run build",
     "dev": "concurrently \"npx tsc -w\"  \"nodemon dist/server.js\"",
-    "prepopulate": "npm run build",
-    "populate": "DEBUG=* node dist/database"
+    "prepopulate": "npm run build && DEBUG=* node dist/database/drop",
+    "populate": "DEBUG=* node dist/database/populate"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
