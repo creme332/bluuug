@@ -27,11 +27,23 @@ function getSort(req: Request): SortingCriteria {
   return {};
 }
 
+function getFilter(req: Request) {
+  const { user, post } = req.query;
+
+  if (!user && !post) return {};
+
+  if (!user && post) return { post };
+  if (user && !post) return { author: user };
+
+  //! Add sanitization
+  return { author: user, post };
+}
+
 export const comment_list = asyncHandler(async (req, res, next) => {
-  console.log(req.query);
-  const sortType = getSort(req);
   try {
-    const posts = await Comment.find({}, commentProjection).sort(sortType);
+    const posts = await Comment.find(getFilter(req), commentProjection).sort(
+      getSort(req)
+    );
     res.json(posts);
   } catch (error) {
     res.status(404).json({ error: "Comments not found." });
