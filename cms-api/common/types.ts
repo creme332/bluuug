@@ -1,4 +1,4 @@
-import { Types } from "mongoose";
+import { Types, SortOrder } from "mongoose";
 
 export interface iUser {
   name: string;
@@ -25,3 +25,6 @@ export interface iPost {
   comments: Types.ObjectId[];
   author: Types.ObjectId;
 }
+
+// Define a type for the sorting criteria object
+export type SortingCriteria = { [key: string]: SortOrder };

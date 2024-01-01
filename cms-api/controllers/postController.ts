@@ -1,13 +1,11 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import Post from "../models/post";
 import asyncHandler from "express-async-handler";
-import { SortOrder } from "mongoose";
 import { Request } from "express";
+import { SortingCriteria } from "../common/types";
+import { SortOrder } from "mongoose";
 
 const postProjection = { __v: 0 };
-
-// Define a type for the sorting criteria object
-type SortingCriteria = { [key: string]: SortOrder };
 
 function getSort(req: Request): SortingCriteria {
   const { sort, order } = req.query;
