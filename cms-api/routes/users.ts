@@ -1,10 +1,10 @@
 import express from "express";
+import { user_detail, user_list } from "../controllers/userController";
 
 const router = express.Router();
 
-/* GET users listing. */
-router.get("/", function (req, res, next) {
-  res.json({ hello: "world" });
-});
+router.get("/", user_list);
+
+router.get("/:id", user_detail);
 
 export default router;
