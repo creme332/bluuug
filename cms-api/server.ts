@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import app from "./app";
 import http from "http";
 import debug from "debug";
+import "./database/mongoConfig"; // connects to mongo database
 
 dotenv.config();
 const myDebugger = debug("server:server");

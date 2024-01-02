@@ -4,23 +4,8 @@ import logger from "morgan";
 import postRouter from "./routes/posts";
 import commentRouter from "./routes/comments";
 import userRouter from "./routes/users";
-import mongoose from "mongoose";
-import dotenv from "dotenv";
-dotenv.config();
 
 const app = express();
-
-// Set up mongoose connection
-mongoose.set("strictQuery", false);
-
-main().catch((err) => console.log(err));
-async function main() {
-  if (!process.env.MONGO_STRING) {
-    console.error("Invalid mongo string");
-    return;
-  }
-  await mongoose.connect(process.env.MONGO_STRING);
-}
 
 app.use(logger("dev"));
 app.use(express.json());
