@@ -11,9 +11,9 @@ export const mochaHooks = {
       await dataManager().save();
     },
   ],
-  // afterAll: [
-  //   async function () {
-  //     await mongoServer.stop();
-  //   },
-  // ],
+  afterAll: [
+    async function () {
+      await mongoServer.stop();
+    },
+  ],
 };
