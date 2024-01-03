@@ -5,13 +5,13 @@ const mongoServer = testServer(); //
 
 // https://mochajs.org/#multiple-root-hooks-in-a-single-plugin
 export const mochaHooks = {
-  before: [
+  beforeAll: [
     async function () {
       await mongoServer.initialize();
       await dataManager().save();
     },
   ],
-  // after: [
+  // afterAll: [
   //   async function () {
   //     await mongoServer.stop();
   //   },
