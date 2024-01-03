@@ -12,8 +12,8 @@ router.get("/", user_list);
 
 router.get("/:id", user_detail);
 
-router.get("/create", user_create_post);
+router.post("/create", user_create_post);
 
-router.get("/delete", user_delete_post);
+router.post("/:id/delete", user_delete_post);
 
 export default router;

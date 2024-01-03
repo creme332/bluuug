@@ -12,8 +12,8 @@ router.get("/", comment_list);
 
 router.get("/:id", comment_detail);
 
-router.get("/create", comment_create_post);
+router.post("/create", comment_create_post);
 
-router.get("/delete", comment_delete_post);
+router.post("/:id/delete", comment_delete_post);
 
 export default router;
