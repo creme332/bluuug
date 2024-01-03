@@ -1,11 +1,9 @@
 import dotenv from "dotenv";
 import app from "./app";
 import http from "http";
-import debug from "debug";
 import "./database/mongoConfig"; // connects to mongo database
 
 dotenv.config();
-const myDebugger = debug("server:server");
 
 /**
  * Get port from environment and store in Express.
@@ -81,7 +79,7 @@ function onError(error: NodeJS.ErrnoException) {
 function onListening() {
   const addr = server.address();
   const bind = typeof addr === "string" ? "pipe " + addr : "port " + addr?.port;
-  myDebugger("Listening on " + bind);
+  console.log("Listening on " + bind);
 }
 
 export default server;

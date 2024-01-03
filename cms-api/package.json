@@ -8,15 +8,14 @@
     "start": "node dist/server.js",
     "predev": "npm run build",
     "dev": "concurrently \"npx tsc -w\"  \"nodemon dist/server.js\"",
-    "prepopulate": "npm run build && DEBUG=* node dist/database/drop",
-    "populate": "DEBUG=* node dist/database/populate",
-    "pretest":"npm run build",
+    "prepopulate": "npm run build && node dist/database/drop",
+    "populate": "node dist/database/populate",
+    "pretest": "npm run build",
     "test": "mocha --require dist/test/hooks.js dist/test"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "cookie-parser": "~1.4.4",
-    "debug": "~2.6.9",
     "express": "~4.16.1",
     "express-async-handler": "^1.2.0",
     "express-session": "^1.17.3",
@@ -30,7 +29,6 @@
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
     "@types/cookie-parser": "^1.4.6",
-    "@types/debug": "^4.1.12",
     "@types/express": "^4.17.21",
     "@types/mocha": "^10.0.6",
     "@types/morgan": "^1.9.9",
