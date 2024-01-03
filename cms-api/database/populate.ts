@@ -22,8 +22,7 @@ async function main() {
 
   await mongoose.connect(process.env.MONGO_STRING);
   console.log("Connected");
-  dataManager().save();
-
+  await dataManager().save();
   console.log("Closing mongoose");
 
   mongoose.connection.close();
