@@ -22,16 +22,18 @@ export const user_list = asyncHandler(async (req, res, next) => {
     const users = await User.find({}, userProjection);
     res.json(users);
   } catch (error) {
-    res.status(404).json({ error });
+    console.log(error);
+    res.status(500).json({ error });
   }
 });
 
 export const user_detail = asyncHandler(async (req, res, next) => {
   try {
-    const user = await User.findById(req.params.id, userProjection).exec();
+    const user = await User.findById(req.params.id, userProjection);
     res.json(user);
   } catch (error) {
-    res.status(404).json({ error: "User not found." });
+    console.log(error);
+    res.status(500).json({ error });
   }
 });
 
@@ -79,6 +81,7 @@ export const user_create_post = [
       await item.save();
       res.status(200).send();
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error });
     }
   }),
@@ -100,6 +103,7 @@ export const user_delete_post = asyncHandler(async (req, res, next) => {
     await User.findByIdAndDelete(req.params.id);
     res.status(200).send();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error });
   }
 });

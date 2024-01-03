@@ -113,6 +113,7 @@ export const comment_create_post = [
       await item.save();
       res.send();
     } catch (error) {
+      console.log(error);
       res.status(500).json({ error });
     }
   }),
@@ -134,6 +135,7 @@ export const comment_delete_post = asyncHandler(async (req, res, next) => {
     await Comment.findByIdAndDelete(req.params.id);
     res.send();
   } catch (error) {
+    console.log(error);
     res.status(500).json({ error });
   }
 });
