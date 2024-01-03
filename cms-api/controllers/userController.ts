@@ -3,7 +3,7 @@ import User from "../models/user";
 import asyncHandler from "express-async-handler";
 import { body, validationResult } from "express-validator";
 
-const userProjection = { __v: 0, password: 0 };
+const userProjection = { __v: 0, email: 0, password: 0 };
 
 const emailChain = () =>
   body("email").trim().escape().isEmail().withMessage("Invalid email.");
