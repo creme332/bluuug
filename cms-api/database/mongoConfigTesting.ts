@@ -1,25 +1,38 @@
 import mongoose from "mongoose";
 import { MongoMemoryServer } from "mongodb-memory-server";
 
-async function initializeMongoServer() {
-  const mongoServer = await MongoMemoryServer.create();
-  const mongoUri = mongoServer.getUri();
+function TestDBServer() {
+  let mongoServer: MongoMemoryServer;
 
-  mongoose.connect(mongoUri);
+  async function initialize() {
+    mongoServer = await MongoMemoryServer.create();
+    const mongoUri = mongoServer.getUri();
 
-  mongoose.connection.on("error", (e) => {
-    if (e.message.code === "ETIMEDOUT") {
+    mongoose.connect(mongoUri, { dbName: "bluuug" });
+
+    mongoose.connection.on("error", (e) => {
+      if (e.message.code === "ETIMEDOUT") {
+        console.log(e);
+        mongoose.connect(mongoUri);
+      }
       console.log(e);
-      mongoose.connect(mongoUri);
+    });
+
+    mongoose.connection.once("open", () => {
+      console.log(`MongoDB successfully connected to ${mongoUri}`);
+    });
+  }
+
+  async function stop() {
+    if (!mongoServer) {
+      console.log("Mongo server not initialized");
+      return;
     }
-    console.log(e);
-  });
+    mongoose.disconnect();
+    mongoServer.stop();
+  }
 
-  mongoose.connection.once("open", () => {
-    console.log(`MongoDB successfully connected to ${mongoUri}`);
-
-    // Add sample data to database
-  });
+  return { initialize, stop };
 }
 
-export default initializeMongoServer;
+export default TestDBServer;

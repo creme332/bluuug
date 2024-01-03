@@ -1,8 +1,19 @@
-import initializeMongoServer from "../database/mongoConfigTesting";
+import testServer from "../database/mongoConfigTesting";
+import manager from "../database/data";
 
+const mongoServer = testServer(); //
+
+// https://mochajs.org/#multiple-root-hooks-in-a-single-plugin
 export const mochaHooks = {
-  beforeEach(done: () => void) {
-    initializeMongoServer();
-    done();
-  },
+  beforeEach: [
+    async function () {
+      await mongoServer.initialize();
+      await manager().save();
+    },
+  ],
+  afterEach: [
+    async function () {
+      await mongoServer.stop();
+    },
+  ],
 };
