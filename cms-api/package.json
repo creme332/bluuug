@@ -11,7 +11,7 @@
     "prepopulate": "npm run build && node dist/database/drop",
     "populate": "node dist/database/populate",
     "pretest": "npm run build",
-    "test": "mocha --require dist/test/hooks.js dist/test"
+    "test": "mocha --require dist/test/hooks.js dist/test --watch"
   },
   "dependencies": {
     "bcryptjs": "^2.4.3",

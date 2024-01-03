@@ -3,18 +3,19 @@
 ![Express.js](https://img.shields.io/badge/express.js-%23404d59.svg?logo=express&logoColor=%2361DAFB)
 ![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?logo=mongodb&logoColor=white)
 ![NodeJS](https://img.shields.io/badge/node.js-6DA55F?logo=node.js&logoColor=white)
+![Mocha](https://img.shields.io/badge/-mocha-%238D6748?logo=mocha&logoColor=white)
+
+A headless CMS API for bluuug.
 
 ## Features
 - API versioning
 - RESTful API
 - Protected endpoints with JWT
 - Validation with express-validator
-- Tested with supertest
+- Tested with Postman
 
 ## API endpoints
-The API is deployed on https://bluuug-api.onrender.com/v1
-
-> 🔴 **Note**: The `/v1` prefix is essential and indicates the stable version 1 of the API.
+The API is deployed on https://bluuug-api.onrender.com/v1.
 
 ### Public
 | Endpoint                                       | Meaning                                                                   |
@@ -31,17 +32,17 @@ The API is deployed on https://bluuug-api.onrender.com/v1
 | `GET /users/[id]`                              | Get the user with ID `id`.                                                |
 
 ### Protected
-| Endpoint                     | Meaning                        |
-| ---------------------------- | ------------------------------ |
-| `POST /posts/create`         | Create a new post.             |
-| `POST /posts/[id]/delete`    | Delete a post with id `id`.    |
-| `POST /posts/[id]/update`    | Update a post with id `id`.    |
-| `POST /comments/create`      | Create a new comment.          |
-| `POST /comments/[id]/delete` | Delete a comment with id `id`. |
-| `POST /comments/[id]/update` | Update a comment with id `id`. |
-| `POST /users/create`         | Create a new user.             |
-| `POST /users/[id]/delete`    | Delete a user with id `id`.    |
-| `POST /users/[id]/update`    | Update a user with id `id`.    |
+| Endpoint                       | Meaning                        |
+| ------------------------------ | ------------------------------ |
+| `POST /posts/create`           | Create a new post.             |
+| `DELETE /posts/[id]/delete`    | Delete a post with id `id`.    |
+| `POST /posts/[id]/update`      | Update a post with id `id`.    |
+| `POST /comments/create`        | Create a new comment.          |
+| `DELETE /comments/[id]/delete` | Delete a comment with id `id`. |
+| `POST /comments/[id]/update`   | Update a comment with id `id`. |
+| `POST /users/create`           | Create a new user.             |
+| `DELETE /users/[id]/delete`    | Delete a user with id `id`.    |
+| `POST /users/[id]/update`      | Update a user with id `id`.    |
 
 ## Usage
 To run server in development mode:
@@ -56,7 +57,10 @@ npm run build
 ```
 
 ## To-do
-- [ ] API versioning
+- [ ] add limit to api get requests
+- [ ] create a test database
+- [ ] use update http instead of post request to update stuffs
+- [ ] add api for authentication
 
 ## Reference
 - https://www.youtube.com/watch?v=qy8PxD3alWw&ab_channel=ColtSteele

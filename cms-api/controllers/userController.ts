@@ -22,7 +22,7 @@ export const user_list = asyncHandler(async (req, res, next) => {
     const users = await User.find({}, userProjection);
     res.json(users);
   } catch (error) {
-    res.status(404).json({ error: "Users not found." });
+    res.status(404).json({ error });
   }
 });
 
@@ -77,7 +77,7 @@ export const user_create_post = [
     // Data from form is valid. Save item.
     try {
       await item.save();
-      res.send();
+      res.status(200).send();
     } catch (error) {
       res.status(500).json({ error });
     }
@@ -98,7 +98,7 @@ export const user_delete_post = asyncHandler(async (req, res, next) => {
 
   try {
     await User.findByIdAndDelete(req.params.id);
-    res.send();
+    res.status(200).send();
   } catch (error) {
     res.status(500).json({ error });
   }
