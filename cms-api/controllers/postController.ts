@@ -6,6 +6,7 @@ import { Request } from "express";
 import { SortingCriteria } from "../common/types";
 import { SortOrder } from "mongoose";
 import { body, validationResult } from "express-validator";
+import authenticateToken from "../middlewares/authenticateToken";
 
 const postProjection = { __v: 0 };
 
@@ -50,7 +51,7 @@ export const post_detail = asyncHandler(async (req, res, next) => {
 
 // Handle Post create on POST.
 export const post_create_post = [
-  // Validate and sanitize fields.
+  authenticateToken,
   body("title")
     .trim()
     .isLength({ min: 5 })
@@ -88,7 +89,7 @@ export const post_create_post = [
     }
 
     // Check if author is valid
-    const author = User.findById(req.body.author);
+    const author = await User.findById(req.body.author);
 
     if (!author) {
       res.status(400).json({ error: `Author does not exist` });
@@ -111,7 +112,7 @@ export const post_create_post = [
     // Data from form is valid. Save item.
     try {
       await item.save();
-      res.send();
+      res.sendStatus(200);
     } catch (error) {
       console.log(error);
       res.status(500).json({ error });
