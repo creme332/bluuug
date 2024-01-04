@@ -98,6 +98,7 @@ export const post_create_post = [
     // Create Post object with escaped and trimmed data
     const postDict = {
       title: req.body.title,
+      body: req.body.body,
       summary: req.body.summary,
       tags: req.body.tags,
       category: req.body.category,
