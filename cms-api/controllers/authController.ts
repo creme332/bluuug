@@ -57,7 +57,10 @@ export const login_post = [
 
     // return JWT to user
     const accessToken = jwt.sign(
-      user.toJSON(),
+      {
+        id: user.id,
+        email: user.email,
+      },
       process.env.ACCESS_TOKEN_SECRET,
       { expiresIn: "15m" }
     );
