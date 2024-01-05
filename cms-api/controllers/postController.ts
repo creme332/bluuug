@@ -88,9 +88,10 @@ export const post_create_post = [
       return;
     }
 
-    // Check if author is valid
-    const author = await User.findById(req.body.author);
+    // set author to currently authenticated user
+    const author = res.locals.user;
 
+    // check if author is valid
     if (!author) {
       res.status(400).json({ error: `Author does not exist` });
       return;
@@ -104,7 +105,7 @@ export const post_create_post = [
       tags: req.body.tags,
       category: req.body.category,
       timestamp: new Date(),
-      author: req.body.author,
+      author: author.id,
     };
 
     const item = new Post(postDict);
@@ -121,22 +122,24 @@ export const post_create_post = [
 ];
 
 // Handle Post delete on POST.
-export const post_delete_post = asyncHandler(async (req, res, next) => {
-  //! add user authentication
+export const post_delete_post = [
+  authenticateToken,
+  asyncHandler(async (req, res, next) => {
 
-  const post = Post.findById(req.params.id);
+    const post = Post.findById(req.params.id);
 
-  // check if item exists
-  if (!post) {
-    res.status(400).json({ error: "Post does not exist" });
-    return;
-  }
+    // check if item exists
+    if (!post) {
+      res.status(400).json({ error: "Post does not exist" });
+      return;
+    }
 
-  try {
-    await Post.findByIdAndDelete(req.params.id);
-    res.send();
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error });
-  }
-});
+    try {
+      await Post.findByIdAndDelete(req.params.id);
+      res.send();
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error });
+    }
+  }),
+];
