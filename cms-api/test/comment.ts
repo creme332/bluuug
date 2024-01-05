@@ -4,10 +4,15 @@ import assert from "assert";
 import User from "../models/user";
 import Post from "../models/post";
 import Comment from "../models/comment";
-import { iUser, iComment } from "../common/types";
+import { iComment } from "../common/types";
+
+const sampleUser = {
+  email: "creme332@bluuug.com",
+  password: "sample_password",
+};
 
 describe("GET /v1/comments", function () {
-  it("responds with an array of objects", async function () {
+  it("responds with an array of comments", async function () {
     const res = await request(app)
       .get("/v1/comments")
       .set("Accept", "application/json")
@@ -29,71 +34,81 @@ describe("GET /v1/comments", function () {
 });
 
 describe("POST /v1/comments/create", function () {
-  it("saves comment to database", async function () {
-    const user = new User({
-      email: "dsademail@email.com",
-      name: "user3433",
-      password: "hashedPassword",
-    });
-
-    const post = new Post({
-      title: "delete_post",
-      body: "this is the body",
-      category: "test_category",
-      summary: "this is a summary",
-      timestamp: new Date(),
-      author: user.id,
-    });
+  it("forbids comment creation by unauthenticated users", async function () {
+    const validPostID = (await Post.findOne({}))?._id;
+    const validUserID = (await User.findOne({}))?._id;
 
     await request(app)
       .post("/v1/comments/create")
       .type("form")
       .send({
         text: "unique_comment_1232432",
-        post: post.id,
-        author: user.id,
+        post: validPostID,
+        author: validUserID,
+      })
+      .expect(401);
+  });
+
+  it("allows comment creation by authenticated users", async function () {
+    const user = await User.findOne({});
+    const validPostID = (await Post.findOne({}))?.id;
+
+    // login
+    const loginResponse = await request(app)
+      .post("/v1/auth/login")
+      .type("form")
+      .send(sampleUser)
+      .expect(200);
+
+    await request(app)
+      .post("/v1/comments/create")
+      .set("Content-Type", "application/json")
+      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`)
+      .type("form")
+      .send({
+        text: "unique_comment_1232432",
+        post: validPostID?.toString(),
+        author: user?.id,
       })
       .expect(200);
 
-    const getResponse = await request(app).get("/v1/comments/").expect(200);
+    const newComment = await Comment.findOne({
+      text: "unique_comment_1232432",
+    });
 
-    assert(
-      getResponse.body
-        .map((e: iComment) => e.text)
-        .includes("unique_comment_1232432")
-    );
+    assert(newComment);
+    assert.equal(newComment.post?.toString(), validPostID?.toString());
+    assert.equal(newComment.author.toString(), user?.id);
   });
 });
 
-describe("POST /v1/comments/delete without authentication", function () {
-  it("deletes comment from database", async function () {
-    const user = new User({
-      email: "dsademail@email.com",
-      name: "user3433",
-      password: "hashedPassword",
-    });
+describe("POST /v1/comments/delete", function () {
+  it("forbids comment deletion by unsigned users", async function () {
+    const comment = await Comment.findOne({});
 
-    const post = new Post({
-      title: "delete_post",
-      body: "this is the body",
-      category: "test_category",
-      summary: "this is a summary",
-      timestamp: new Date(),
-      author: user.id,
-    });
+    await request(app).post(`/v1/comments/${comment?.id}/delete`).expect(401);
 
-    const comment = new Comment({
-      text: "deleted_comment",
-      post: post.id,
-      timestamp: new Date(),
-      author: user.id,
-    });
+    const allComments = await Comment.find({});
 
-    await user.save();
-    await post.save();
-    await comment.save();
+    assert(
+      !allComments.map((e: iComment) => e.text).includes("deleted_comment")
+    );
+  });
 
-    await request(app).post(`/v1/comments/${comment.id}/delete`).expect(200);
+  it("allows comment deletion by signed users", async function () {
+    // login
+    const loginResponse = await request(app)
+      .post("/v1/auth/login")
+      .type("form")
+      .send(sampleUser)
+      .expect(200);
+
+    const commentToBeDeleted = await Comment.findOne({});
+
+    await request(app)
+      .post(`/v1/comments/${commentToBeDeleted?.id}/delete`)
+      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`)
+      .expect(200);
 
     const res = await request(app).get("/v1/comments/");
 
