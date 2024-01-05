@@ -6,7 +6,7 @@ import { SortingCriteria } from "../common/types";
 import { SortOrder } from "mongoose";
 import { body, validationResult } from "express-validator";
 import Post from "../models/post";
-import User from "../models/user";
+import authenticateToken from "../middlewares/authenticateToken";
 
 const commentProjection = { __v: 0 };
 
@@ -64,6 +64,7 @@ export const comment_detail = asyncHandler(async (req, res, next) => {
 
 // Handle user create on POST.
 export const comment_create_post = [
+  authenticateToken,
   body("text")
     .trim()
     .isLength({ min: 5 })
@@ -84,17 +85,11 @@ export const comment_create_post = [
 
       return;
     }
+
     // check if post is valid
     const post = Post.findById(req.body.post);
     if (!post) {
       res.status(400).json({ error: "Post does not exist." });
-      return;
-    }
-
-    // check if user is valid
-    const user = User.findById(req.body.author);
-    if (!user) {
-      res.status(400).json({ error: "User does not exist." });
       return;
     }
 
@@ -103,7 +98,7 @@ export const comment_create_post = [
       text: req.body.text,
       timestamp: new Date(),
       post: req.body.post,
-      author: req.body.author,
+      author: res.locals.user._id,
     };
 
     const item = new Comment(commentDict);
@@ -120,22 +115,23 @@ export const comment_create_post = [
 ];
 
 // Handle Comment delete on POST.
-export const comment_delete_post = asyncHandler(async (req, res, next) => {
-  //! add user authentication
+export const comment_delete_post = [
+  authenticateToken,
+  asyncHandler(async (req, res, next) => {
+    const comment = Comment.findById(req.params.id);
 
-  const comment = Comment.findById(req.params.id);
+    // check if item exists
+    if (!comment) {
+      res.status(400).json({ error: "Comment does not exist" });
+      return;
+    }
 
-  // check if item exists
-  if (!comment) {
-    res.status(400).json({ error: "Comment does not exist" });
-    return;
-  }
-
-  try {
-    await Comment.findByIdAndDelete(req.params.id);
-    res.send();
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error });
-  }
-});
+    try {
+      await Comment.findByIdAndDelete(req.params.id);
+      res.send();
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error });
+    }
+  }),
+];
