@@ -1,25 +1,14 @@
-import { Group } from "@mantine/core";
-import { RichTextEditor, Link } from "@mantine/tiptap";
-import { Container, Button } from "@mantine/core";
-import { Editor, useEditor } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
-import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
-import Image from "@tiptap/extension-image";
-import Dropcursor from "@tiptap/extension-dropcursor";
-import { ReactNodeViewRenderer } from "@tiptap/react";
-import { IconCodeDots, IconPhoto } from "@tabler/icons-react";
-
-// load all highlight.js languages
-import css from "highlight.js/lib/languages/css";
-import javascript from "highlight.js/lib/languages/javascript";
-import typescript from "highlight.js/lib/languages/typescript";
-import html from "highlight.js/lib/languages/xml";
-import { createLowlight } from "lowlight";
-import React, { useCallback } from "react";
-
-import CodeBlockComponent from "../components/CodeBlockComponent";
-
-const lowlight = createLowlight({ javascript, css, typescript, html });
+import { Title, Group, Stack } from "@mantine/core";
+import {
+  Container,
+  Button,
+  TextInput,
+  MultiSelect,
+  Select,
+} from "@mantine/core";
+import React from "react";
+import { useForm } from "@mantine/form";
+import TextEditor from "../components/TextEditor";
 
 const content = `
 <p>
@@ -41,106 +30,69 @@ console.log(i);
 </p>
 `;
 
-const CodeBlock = ({ editor }: { editor: Editor | null }) => {
-  if (!editor) {
-    return null;
-  }
-  return (
-    <RichTextEditor.Control
-      onClick={() => editor.chain().focus().toggleCodeBlock().run()}
-      aria-label="Add code block"
-      title="Add code block"
-      className={editor.isActive("codeBlock") ? "is-active" : ""}
-    >
-      <IconCodeDots stroke={1.5} size="1rem" />
-    </RichTextEditor.Control>
-  );
-};
+export default function Form() {
+  const form = useForm({
+    initialValues: {
+      title: "",
+      summary: false,
+      category: "",
+      tags: [],
+      body: content,
+    },
 
-const ImageControl = ({ editor }: { editor: Editor | null }) => {
-  const addImage = useCallback(() => {
-    if (!editor) return;
-    const url = window.prompt("URL");
-    const alt = window.prompt("ALT");
-
-    if (url && alt) {
-      editor.chain().focus().setImage({ src: url, alt }).run();
-    }
-  }, [editor]);
-
-  if (!editor) {
-    return null;
-  }
-
-  return (
-    <RichTextEditor.Control
-      onClick={addImage}
-      aria-label="Add image"
-      title="Add image"
-      className={editor.isActive("codeBlock") ? "is-active" : ""}
-    >
-      <IconPhoto stroke={1.5} size="1rem" />
-    </RichTextEditor.Control>
-  );
-};
-
-export default function IndexPage() {
-  const editor: Editor | null = useEditor({
-    extensions: [
-      StarterKit,
-      Image,
-      Link,
-      Dropcursor,
-      CodeBlockLowlight.extend({
-        addNodeView() {
-          return ReactNodeViewRenderer(CodeBlockComponent);
-        },
-      }).configure({ lowlight }),
-    ],
-    content,
+    // validate: {
+    //   email: (value) => (/^\S+@\S+$/.test(value) ? null : "Invalid email"),
+    // },
   });
 
-  function exportContent() {
-    console.log(editor?.getHTML());
+  function updatePostBody(newBody: string) {
+    form.setFieldValue("body", newBody);
   }
 
   return (
-    <Container>
-      <RichTextEditor editor={editor}>
-        <RichTextEditor.Toolbar sticky stickyOffset={60}>
-          <RichTextEditor.ControlsGroup>
-            <RichTextEditor.Bold />
-            <RichTextEditor.Italic />
-            <RichTextEditor.Underline />
-            <RichTextEditor.Strikethrough />
-            <RichTextEditor.ClearFormatting />
-            <RichTextEditor.Highlight />
-            <RichTextEditor.Code />
-            <CodeBlock editor={editor} />
-          </RichTextEditor.ControlsGroup>
-          <RichTextEditor.ControlsGroup>
-            <RichTextEditor.H1 />
-            <RichTextEditor.H2 />
-            <RichTextEditor.H3 />
-            <RichTextEditor.H4 />
-          </RichTextEditor.ControlsGroup>
-          <RichTextEditor.ControlsGroup>
-            <RichTextEditor.Blockquote />
-            <RichTextEditor.Hr />
-            <RichTextEditor.BulletList />
-            <RichTextEditor.OrderedList />
-          </RichTextEditor.ControlsGroup>
-          <RichTextEditor.ControlsGroup>
-            <RichTextEditor.Link />
-            <RichTextEditor.Unlink />
-            <ImageControl editor={editor} />
-          </RichTextEditor.ControlsGroup>
-        </RichTextEditor.Toolbar>
-        <RichTextEditor.Content />
-      </RichTextEditor>
-      <Group mt={40} justify="center">
-        <Button fullWidth onClick={exportContent}>Save</Button>
-      </Group>
+    <Container pb={20}>
+      <Title order={1} mb={10}>
+        Create post
+      </Title>
+      <form onSubmit={form.onSubmit((values) => console.log(values))}>
+        <Stack gap="lg">
+          <TextInput
+            withAsterisk
+            label="Title"
+            placeholder="A beautiful title"
+            {...form.getInputProps("title")}
+          />
+          <TextInput
+            withAsterisk
+            label="Summary"
+            placeholder="A short description of the post"
+            {...form.getInputProps("summary")}
+          />
+          <Group>
+            <Select
+              required
+              style={{ flex: 1 }}
+              label="Category"
+              placeholder="Pick value"
+              data={["React", "Angular", "Vue", "Svelte"]}
+              {...form.getInputProps("category")}
+            />
+            <MultiSelect
+              style={{ flex: 1 }}
+              label="Tags"
+              placeholder="Pick value"
+              data={["React", "Angular", "Vue", "Svelte"]}
+              {...form.getInputProps("tags")}
+            />
+          </Group>
+          <TextEditor body={form.values.body} updateContent={updatePostBody} />
+          <Group justify="center">
+            <Button type="submit" fullWidth>
+              Save
+            </Button>
+          </Group>
+        </Stack>
+      </form>
     </Container>
   );
 }
