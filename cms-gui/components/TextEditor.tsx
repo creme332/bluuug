@@ -1,10 +1,8 @@
-import { Group } from "@mantine/core";
 import { RichTextEditor, Link } from "@mantine/tiptap";
 import { Editor, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
-import Dropcursor from "@tiptap/extension-dropcursor";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { IconCodeDots, IconPhoto } from "@tabler/icons-react";
 
@@ -63,13 +61,20 @@ const ImageControl = ({ editor }: { editor: Editor | null }) => {
   );
 };
 
-export default function TextEditor({ body }: { body: string }) {
+interface TextEditorInterface {
+  body: string;
+  updateContent: (newContent: string) => void;
+}
+
+export default function TextEditor({
+  body,
+  updateContent,
+}: TextEditorInterface) {
   const editor: Editor | null = useEditor({
     extensions: [
       StarterKit,
       Image,
       Link,
-      Dropcursor,
       CodeBlockLowlight.extend({
         addNodeView() {
           return ReactNodeViewRenderer(CodeBlockComponent);
@@ -77,6 +82,10 @@ export default function TextEditor({ body }: { body: string }) {
       }).configure({ lowlight }),
     ],
     content: body,
+    onUpdate({ editor }) {
+      if (!editor) return;
+      updateContent(editor.getHTML());
+    },
   });
 
   return (
