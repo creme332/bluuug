@@ -30,7 +30,12 @@ console.log(i);
 </p>
 `;
 
-export default function Form() {
+interface formInterface {
+  allTags: string[];
+  allCategories: string[];
+}
+
+export default function Form({ allTags, allCategories }: formInterface) {
   const form = useForm({
     initialValues: {
       title: "",
@@ -73,15 +78,15 @@ export default function Form() {
               required
               style={{ flex: 1 }}
               label="Category"
-              placeholder="Pick value"
-              data={["React", "Angular", "Vue", "Svelte"]}
+              placeholder="Pick category"
+              data={allCategories}
               {...form.getInputProps("category")}
             />
             <MultiSelect
               style={{ flex: 1 }}
               label="Tags"
-              placeholder="Pick value"
-              data={["React", "Angular", "Vue", "Svelte"]}
+              placeholder="Pick tags"
+              data={allTags}
               {...form.getInputProps("tags")}
             />
           </Group>
