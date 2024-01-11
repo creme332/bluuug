@@ -5,9 +5,11 @@ import postRouter from "./routes/posts";
 import commentRouter from "./routes/comments";
 import userRouter from "./routes/users";
 import authRouter from "./routes/auth";
+import cors from "cors";
 
 const app = express();
 
+app.use(cors());
 app.use(logger("dev"));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
