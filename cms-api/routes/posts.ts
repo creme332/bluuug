@@ -4,11 +4,17 @@ import {
   post_list,
   post_create_post,
   post_delete_post,
+  post_categories_list,
+  post_tag_list,
 } from "../controllers/postController";
 
 const router = express.Router();
 
 router.get("/", post_list);
+
+router.get("/tags", post_tag_list);
+
+router.get("/categories", post_categories_list);
 
 router.get("/:id", post_detail);
 

@@ -40,6 +40,33 @@ export const post_list = asyncHandler(async (req, res, next) => {
   }
 });
 
+export const post_categories_list = asyncHandler(async (req, res, next) => {
+  const allCategories = await Post.distinct("category");
+  res.json(allCategories);
+});
+
+export const post_tag_list = asyncHandler(async (req, res, next) => {
+  const allTags = await Post.aggregate([
+    // get only array of tags for each document
+    {
+      $project: { _id: 0, tags: 1 },
+    },
+
+    // explode array
+    {
+      $unwind: "$tags",
+    },
+    {
+      // get unique tags
+      $group: {
+        _id: null,
+        uniqueValues: { $addToSet: "$tags" },
+      },
+    },
+  ]);
+  res.json(allTags[0].uniqueValues);
+});
+
 export const post_detail = asyncHandler(async (req, res, next) => {
   try {
     const post = await Post.findById(req.params.id, postProjection);
@@ -125,7 +152,6 @@ export const post_create_post = [
 export const post_delete_post = [
   authenticateToken,
   asyncHandler(async (req, res, next) => {
-
     const post = Post.findById(req.params.id);
 
     // check if item exists
