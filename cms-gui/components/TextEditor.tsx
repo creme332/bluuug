@@ -5,6 +5,8 @@ import CodeBlockLowlight from "@tiptap/extension-code-block-lowlight";
 import Image from "@tiptap/extension-image";
 import { ReactNodeViewRenderer } from "@tiptap/react";
 import { IconCodeDots, IconPhoto } from "@tabler/icons-react";
+import Underline from '@tiptap/extension-underline'
+import Highlight from '@tiptap/extension-highlight'
 
 // load all highlight.js languages
 import css from "highlight.js/lib/languages/css";
@@ -74,6 +76,8 @@ export default function TextEditor({
     extensions: [
       StarterKit,
       Image,
+      Underline,
+      Highlight,
       Link,
       CodeBlockLowlight.extend({
         addNodeView() {
