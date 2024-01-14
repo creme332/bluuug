@@ -7,6 +7,7 @@ import { SortingCriteria } from "../common/types";
 import { SortOrder } from "mongoose";
 import { body, validationResult } from "express-validator";
 import authenticateToken from "../middlewares/authenticateToken";
+import authenticateAdmin from "../middlewares/authenticateAdmin";
 
 const postProjection = { __v: 0 };
 
@@ -79,6 +80,7 @@ export const post_detail = asyncHandler(async (req, res, next) => {
 // Handle Post create on POST.
 export const post_create_post = [
   authenticateToken,
+  authenticateAdmin,
   body("title")
     .trim()
     .isLength({ min: 5 })
@@ -151,6 +153,7 @@ export const post_create_post = [
 // Handle Post delete on POST.
 export const post_delete_post = [
   authenticateToken,
+  authenticateAdmin,
   asyncHandler(async (req, res, next) => {
     const post = Post.findById(req.params.id);
 

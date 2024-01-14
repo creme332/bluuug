@@ -7,6 +7,7 @@ import { SortOrder } from "mongoose";
 import { body, validationResult } from "express-validator";
 import Post from "../models/post";
 import authenticateToken from "../middlewares/authenticateToken";
+import authenticateAdmin from "../middlewares/authenticateAdmin";
 
 const commentProjection = { __v: 0 };
 
@@ -65,6 +66,7 @@ export const comment_detail = asyncHandler(async (req, res, next) => {
 // Handle user create on POST.
 export const comment_create_post = [
   authenticateToken,
+  authenticateAdmin,
   body("text")
     .trim()
     .isLength({ min: 5 })
@@ -117,6 +119,7 @@ export const comment_create_post = [
 // Handle Comment delete on POST.
 export const comment_delete_post = [
   authenticateToken,
+  authenticateAdmin,
   asyncHandler(async (req, res, next) => {
     const comment = Comment.findById(req.params.id);
 

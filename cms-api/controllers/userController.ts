@@ -2,6 +2,8 @@
 import User from "../models/user";
 import asyncHandler from "express-async-handler";
 import { body, validationResult } from "express-validator";
+import authenticateToken from "../middlewares/authenticateToken";
+import authenticateAdmin from "../middlewares/authenticateAdmin";
 
 const userProjection = { __v: 0, email: 0, password: 0 };
 
@@ -88,22 +90,24 @@ export const user_create_post = [
 ];
 
 // Handle User delete on POST.
-export const user_delete_post = asyncHandler(async (req, res, next) => {
-  //! add user authentication
+export const user_delete_post = [
+  authenticateToken,
+  authenticateAdmin,
+  asyncHandler(async (req, res, next) => {
+    const user = res.locals.user;
 
-  const user = User.findById(req.params.id);
+    // check if item exists
+    if (!user) {
+      res.status(400).json({ error: "User does not exist" });
+      return;
+    }
 
-  // check if item exists
-  if (!user) {
-    res.status(400).json({ error: "User does not exist" });
-    return;
-  }
-
-  try {
-    await User.findByIdAndDelete(req.params.id);
-    res.status(200).send();
-  } catch (error) {
-    console.log(error);
-    res.status(500).json({ error });
-  }
-});
+    try {
+      await User.findByIdAndDelete(req.params.id);
+      res.status(200).send();
+    } catch (error) {
+      console.log(error);
+      res.status(500).json({ error });
+    }
+  }),
+];
