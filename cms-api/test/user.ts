@@ -7,10 +7,10 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const nonAdminUserDetails = {
-  email: "creme332@bluuug.com",
-  password: "sample_password",
-};
+const testUser = {
+  email: "test_user@bluuug.com",
+  password: "test_password",
+}; // ! a user with these credentials must exist in the database
 
 describe("GET /v1/users", function () {
   it("responds with an array of objects", async function () {
@@ -88,10 +88,7 @@ describe("POST /v1/users/delete", function () {
   it("forbids request with non-admin access token", async function () {
     // get access token by logging in with normal user credentials
     const accessToken = (
-      await request(app)
-        .post("/v1/auth/login")
-        .type("form")
-        .send(nonAdminUserDetails)
+      await request(app).post("/v1/auth/login").type("form").send(testUser)
     )?.body.accessToken;
 
     // create a new user which will be deleted
@@ -106,7 +103,7 @@ describe("POST /v1/users/delete", function () {
     await request(app)
       .post(`/v1/users/${newUser.id}/delete`)
       .set("Authorization", `Bearer ${accessToken}`)
-      .expect(403);
+      .expect(401);
 
     // ensure that no users have been deleted
     const allUsers = await User.find({});
