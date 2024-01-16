@@ -39,7 +39,7 @@ const authenticateAdmin = async (
     return;
   }
 
-  if (!bcrypt.compareSync(req.body.password, user.password)) {
+  if (!bcrypt.compareSync(process.env.ADMIN_PASSWORD, user.password)) {
     // passwords do not match
     console.log("Attempted admin password is incorrect");
     res.sendStatus(401);
