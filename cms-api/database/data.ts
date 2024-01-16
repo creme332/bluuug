@@ -26,8 +26,18 @@ function dataManager() {
   }
 
   async function createUsers() {
+
+    if (!process.env.ADMIN_EMAIL || !process.env.ADMIN_PASSWORD) {
+      console.error("Admin details missing from .env file");
+      return;
+    }
+
     await Promise.all([
-      createUser("creme332@bluuug.com", "creme332", "sample_password"),
+      createUser(
+        process.env.ADMIN_EMAIL,
+        "creme332",
+        process.env.ADMIN_PASSWORD
+      ),
       createUser("test_user@bluuug.com", "test_user", "test_password"),
       createUser("harrykane12@bluuug.com", "harry kane", "aaaaaaaa"),
     ]);
