@@ -1,14 +1,17 @@
 import request from "supertest";
 import app from "../app";
 import assert from "assert";
-import User from "../models/user";
 import Post from "../models/post";
 import { iPost } from "../common/types";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
 
-const sampleUser = {
-  email: "creme332@bluuug.com",
-  password: "sample_password",
-};
+dotenv.config();
+
+const testUser = {
+  email: "test_user@bluuug.com",
+  password: "test_password",
+}; // ! a user with these credentials must exist in the database
 
 describe("GET /v1/posts", function () {
   it("responds with an array of posts", async function () {
@@ -18,16 +21,17 @@ describe("GET /v1/posts", function () {
       .expect("Content-Type", /json/)
       .expect(200);
 
-    assert(res.body.length > 0);
+    const allPostNames = (await Post.find({})).map((e) => e.title);
+
     assert.deepStrictEqual(
       new Set(res.body.map((e: iPost) => e.title)),
-      new Set(["Introduction to HTML", "CSS Basics", "JavaScript Fundamentals"])
+      new Set(allPostNames)
     );
   });
 });
 
 describe("POST /v1/posts/create", async function () {
-  it("forbid creation by unauthenticated user", async function () {
+  it("forbids post creation by unauthenticated user", async function () {
     await request(app)
       .post("/v1/posts/create")
       .type("form")
@@ -40,99 +44,104 @@ describe("POST /v1/posts/create", async function () {
       .expect(401);
   });
 
-  it("allow creation by authenticated user", async function () {
-    // get access token through login
-    const loginResponse = await request(app)
-      .post("/v1/auth/login")
-      .type("form")
-      .send(sampleUser)
-      .expect(200);
+  it("forbids post creation if non-admin token present", async function () {
+    // get access token by logging in with normal user credentials
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send(testUser)
+    )?.body.accessToken;
 
-    // create a post
     await request(app)
       .post("/v1/posts/create")
-      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`)
+      .set("Authorization", `Bearer ${accessToken}`)
       .type("form")
       .send({
-        title: "unique_authenticated_post",
+        title: "Test post 999",
         body: "this is the body",
         category: "test_category",
         summary: "this is a summary",
       })
+      .expect(401);
+  });
+
+  it("creates post if admin token present", async function () {
+    // get access token by logging in with admin credentials
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      })
+    )?.body.accessToken;
+
+    // create a post
+    const newPost = {
+      title: "unique_authenticated_post",
+      body: "this is the body",
+      category: "test_category",
+      summary: "this is a summary",
+    };
+    await request(app)
+      .post("/v1/posts/create")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .type("form")
+      .send(newPost)
       .expect(200);
 
-    // fetch all posts from database
-    const getResponse = await request(app).get("/v1/posts/").expect(200);
-    const matchingPosts = getResponse.body.filter(
-      (e: iPost) => e.title === "unique_authenticated_post"
-    );
+    // check if post was successfully created
+    const matchingPosts = await Post.find({ title: newPost.title });
 
     assert(matchingPosts.length == 1);
-    assert(matchingPosts[0].body === "this is the body");
-    assert(matchingPosts[0].category === "test_category");
-    assert(matchingPosts[0].summary === "this is a summary");
+    assert(matchingPosts[0].body === newPost.body);
+    assert(matchingPosts[0].category === newPost.category);
+    assert(matchingPosts[0].summary === newPost.summary);
   });
 });
 
 describe("POST /v1/posts/delete", function () {
-  it("forbid deletion by unauthenticated user", async function () {
-    const user = (
-      await User.find({
-        email: sampleUser.email,
-      })
-    )[0];
+  it("forbid post deletion by unauthenticated user", async function () {
+    // get the id of some post
+    const postID = (await Post.findOne({}))?.id;
 
-    // create a new post to be deleted
-    const post = new Post({
-      title: "delete_post",
-      body: "this is the body",
-      category: "test_category",
-      summary: "this is a summary",
-      timestamp: new Date(),
-      author: user._id,
-    });
-
-    await post.save();
-
-    await request(app).post(`/v1/posts/${post.id}/delete`).expect(401);
+    // send delete request
+    await request(app).post(`/v1/posts/${postID}/delete`).expect(401);
   });
 
-  it("allow deletion by authenticated user", async function () {
-    const user = (
-      await User.find({
-        email: sampleUser.email,
-      })
-    )[0];
+  it("forbid post deletion with non-admin access token", async function () {
+    // get access token by logging in with admin credentials
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send(testUser)
+    )?.body.accessToken;
 
-    const post = new Post({
-      title: "delete_post",
-      body: "this is the body",
-      category: "test_category",
-      summary: "this is a summary",
-      timestamp: new Date(),
-      author: user._id,
-    });
+    // get the id of some post
+    const postID = (await Post.findOne({}))?.id;
 
-    await post.save();
-
-    // get access token through login
-    const loginResponse = await request(app)
-      .post("/v1/auth/login")
-      .type("form")
-      .send(sampleUser)
-      .expect(200);
-
+    // send delete request
     await request(app)
-      .post(`/v1/posts/${post.id}/delete`)
-      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`)
-      .then(() => {
-        request(app)
-          .get("/v1/posts/")
-          .end((err, res) => {
-            assert(
-              !res.body.map((e: iPost) => e.title).includes("delete_post")
-            );
-          });
-      });
+      .post(`/v1/posts/${postID}/delete`)
+      .set("Authorization", `Bearer ${accessToken}`)
+      .expect(401);
+  });
+
+  it("allow post deletion with admin token", async function () {
+    // get access token by logging in with admin credentials
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      })
+    )?.body.accessToken;
+
+    // get the id of some post
+    const postID = (await Post.findOne({}))?.id;
+
+    // post delete request
+    await request(app)
+      .post(`/v1/posts/${postID}/delete`)
+      .set("Authorization", `Bearer ${accessToken}`);
+
+    // check if post was successfully deleted
+    const matchingPost = await Post.find({
+      _id: new mongoose.Types.ObjectId(postID),
+    });
+    assert(matchingPost.length === 0);
   });
 });

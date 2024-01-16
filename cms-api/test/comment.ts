@@ -5,11 +5,14 @@ import User from "../models/user";
 import Post from "../models/post";
 import Comment from "../models/comment";
 import { iComment } from "../common/types";
+import dotenv from "dotenv";
 
-const sampleUser = {
-  email: "creme332@bluuug.com",
-  password: "sample_password",
-};
+dotenv.config();
+
+const testUser = {
+  email: "test_user@bluuug.com",
+  password: "test_password",
+}; // ! a user with these credentials must exist in the database
 
 describe("GET /v1/comments", function () {
   it("responds with an array of comments", async function () {
@@ -21,20 +24,20 @@ describe("GET /v1/comments", function () {
 
     assert(res.body.length > 0);
 
+    const receivedComments = res.body.map((e: iComment) => e.text);
+    const expectedComments = (await Comment.find({}, { _id: 0, text: 1 }))?.map(
+      (e) => e.text
+    );
+
     assert.deepStrictEqual(
-      new Set(res.body.map((e: iComment) => e.text)),
-      new Set([
-        "Comment 1 for Post 1",
-        "Comment 2 for Post 1",
-        "Comment 1 for Post 2",
-        "Comment 2 for Post 2",
-      ])
+      new Set(receivedComments),
+      new Set(expectedComments)
     );
   });
 });
 
 describe("POST /v1/comments/create", function () {
-  it("forbids comment creation by unauthenticated users", async function () {
+  it("forbids comment creation without access token", async function () {
     const validPostID = (await Post.findOne({}))?._id;
     const validUserID = (await User.findOne({}))?._id;
 
@@ -49,35 +52,61 @@ describe("POST /v1/comments/create", function () {
       .expect(401);
   });
 
-  it("allows comment creation by authenticated users", async function () {
+  it("forbids comment creation by non-admin access token", async function () {
+    // get access token by logging in
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send(testUser)
+    )?.body.accessToken;
+
+    // find attributes for comments
+    const validPostID = (await Post.findOne({}))?._id;
+    const validUserID = (await User.findOne({}))?._id;
+
+    // attempt to create comment
+    await request(app)
+      .post("/v1/comments/create")
+      .set("Authorization", `Bearer ${accessToken}`)
+      .type("form")
+      .send({
+        text: "unique_comment_1232432",
+        post: validPostID,
+        author: validUserID,
+      })
+      .expect(401);
+  });
+
+  it("allows comment creation with admin token", async function () {
+    // get access token by logging in with admin credentials
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      })
+    )?.body.accessToken;
+
+    // create new comment object
     const user = await User.findOne({});
     const validPostID = (await Post.findOne({}))?.id;
-
-    // login
-    const loginResponse = await request(app)
-      .post("/v1/auth/login")
-      .type("form")
-      .send(sampleUser)
-      .expect(200);
+    const newComment = {
+      text: "unique_comment_1232432",
+      post: validPostID?.toString(),
+      author: user?.id,
+    };
 
     await request(app)
       .post("/v1/comments/create")
       .set("Content-Type", "application/json")
-      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`)
+      .set("Authorization", `Bearer ${accessToken}`)
       .type("form")
-      .send({
-        text: "unique_comment_1232432",
-        post: validPostID?.toString(),
-        author: user?.id,
-      })
+      .send(newComment)
       .expect(200);
 
-    const newComment = await Comment.findOne({
-      text: "unique_comment_1232432",
+    const matchingComments = await Comment.find({
+      text: newComment.text,
     });
 
-    assert(newComment);
-    assert.equal(newComment.post?.toString(), validPostID?.toString());
+    assert(matchingComments.length === 1);
+    assert.equal(newComment.post?.toString(), validPostID);
     assert.equal(newComment.author.toString(), user?.id);
   });
 });
@@ -95,19 +124,20 @@ describe("POST /v1/comments/delete", function () {
     );
   });
 
-  it("allows comment deletion by signed users", async function () {
-    // login
-    const loginResponse = await request(app)
-      .post("/v1/auth/login")
-      .type("form")
-      .send(sampleUser)
-      .expect(200);
+  it("allows comment deletion with admin token", async function () {
+    // get access token by logging in with admin credentials
+    const accessToken = (
+      await request(app).post("/v1/auth/login").type("form").send({
+        email: process.env.ADMIN_EMAIL,
+        password: process.env.ADMIN_PASSWORD,
+      })
+    )?.body.accessToken;
 
     const commentToBeDeleted = await Comment.findOne({});
 
     await request(app)
       .post(`/v1/comments/${commentToBeDeleted?.id}/delete`)
-      .set("Authorization", `Bearer ${loginResponse.body.accessToken}`)
+      .set("Authorization", `Bearer ${accessToken}`)
       .expect(200);
 
     const res = await request(app).get("/v1/comments/");
