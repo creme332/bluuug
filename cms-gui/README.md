@@ -38,11 +38,4 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
- 
-## To-do
-- [ ] Highlight, underline text not working
-- [ ] Add post title, tags, categories
-- [ ] Run lighthouse report
 
-## References
-- https://stackoverflow.com/a/16532884/17627866

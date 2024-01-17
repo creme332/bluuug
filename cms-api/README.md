@@ -10,7 +10,7 @@ A headless CMS API for bluuug.
 ## Features
 - API versioning
 - RESTful API
-- Protected endpoints with JWT
+- User authentication with JWT
 - Validation with express-validator
 - Tested with supertest and mocha
 
@@ -23,7 +23,7 @@ The API is deployed on https://bluuug-api.onrender.com/v1.
 | `GET /posts`                                   | Get the list of posts.                                                    |
 | `GET /posts/?sort=<field>&order=<asc \| desc>` | Get the list of posts sorted by a field in ascending or descending order. |
 | `GET /posts/[id]`                              | Get the post with ID `id`.                                                |
-| `GET /posts/categpries`                        | Get the list of posts' categories.                                        |
+| `GET /posts/categories`                        | Get the list of posts' categories.                                        |
 | `GET /posts/tags`                              | Get the list of posts' tags.                                              |
 | `GET /comments`                                | Get all comments.                                                         |
 | `GET /comments/[id]`                           | Get the comment with ID `id`.                                             |
@@ -65,8 +65,10 @@ npm install
 Create a `.env` file:
 ```
 PORT=4000
-MONGO_STRING=<your_mongo_production_string>
+MONGO_STRING=
 SALT_ROUNDS=10
+ACCESS_TOKEN_SECRET=
+REFRESH_TOKEN=
 ```
 
 Initialize your production database:
@@ -92,10 +94,6 @@ To run tests:
 ```bash
 npm run test
 ```
-
-## To-do
-- [ ] add limit filter parameter to get requests
-- [ ] add api authentication with jwt
 
 ## Reference
 - https://www.youtube.com/watch?v=qy8PxD3alWw&ab_channel=ColtSteele
