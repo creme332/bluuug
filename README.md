@@ -1,17 +1,22 @@
 # bluuug 🦚
-A minimalist blogging platform with a headless CMS. The project is split into 3 sub-projects:
-1. `cms-api` contains the headless CMS for the platform.
-2. `cms-gui` contains an example of a GUI for managing the blog platform. It is accessible only to the administrator and uses the headless CMS.
-3. `blog` contains the website serves posts from the CMS.
 
-## Features
-- Headless CMS with RESTful API
-- RSS feed
-- API authentication using JWT
-- API tested with supertest
-- Blog supports comments, syntax highlighting
+A minimalist personal blogging website with a [headless CMS](https://www.storyblok.com/tp/headless-cms-explained)
 
-For more details about the features, see the respective READMEs in each folder.
+The project is split into 2 sub-projects:
+1. `cms-api` contains the backend code for creating the API of the headless CMS.
+2. `cms-gui` contains the frontend code for the content management system. It is accessible only to the administrator.
 
-## Reference
-This project was done for The Odin Project [Blog API assignment](https://www.theodinproject.com/lessons/nodejs-blog-api).
+> [!NOTE]  
+> bluuug was a project developed for The Odin Project [Blog API assignment](https://www.theodinproject.com/lessons/nodejs-blog-api). It is no longer being actively developed due to time constraints. Only the `cms-api` section is somewhat complete.
+
+## Main features
+
+- Headless CMS with API
+- Code highlighting in posts
+- Comments
+
+For a more detailed breakdown of the features, see the respective READMEs of each sub-project.
+
+## Documentation
+
+Instructions on how to setup this project locally is available in the [`docs`](docs) folder.
